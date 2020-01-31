@@ -3,6 +3,9 @@ package com.imooc.springthreadlocaldemo;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 /**
  * @Description
  * @Author Gao Hang Hang
@@ -11,27 +14,39 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class StartController {
 
-    static ThreadLocal<Integer> c = new ThreadLocal<Integer>() {
+    static HashSet<Val<Integer>> set = new HashSet<>();
+
+    synchronized static void addSet(Val<Integer> v) {
+        set.add(v);
+    }
+
+    static ThreadLocal<Val<Integer>> c = new ThreadLocal<Val<Integer>>() {
         @Override
-        protected Integer initialValue() {
-            return 0;
+        protected Val<Integer> initialValue() {
+            Val<Integer> v = new Val<>();
+            v.set(0);
+            addSet(v);
+            return v;
         }
     };
 
-    synchronized void __add() throws InterruptedException {
+    void __add() throws InterruptedException {
         Thread.sleep(100);
-        c.set(c.get() + 1);
+        Val<Integer> v = c.get();
+        v.set(v.get() + 1);
     }
 
     @RequestMapping("/stat")
     public Integer stat() {
-        return c.get();
+        System.out.println(set.size());
+        for (Val<Integer> integerVal : set) {
+            System.out.println(integerVal.get());
+        }
+        return set.stream().map(x -> x.get()).reduce((a,x) -> a+x).get();
     }
 
     @RequestMapping("/add")
     public Integer add() throws InterruptedException {
-        //Thread.sleep(100);
-        //c++;
         __add();
         return 1;
     }
