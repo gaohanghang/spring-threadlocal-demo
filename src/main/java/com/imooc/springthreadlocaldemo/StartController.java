@@ -20,15 +20,25 @@ public class StartController {
         set.add(v);
     }
 
-    static ThreadLocal<Val<Integer>> c = new ThreadLocal<Val<Integer>>() {
-        @Override
-        protected Val<Integer> initialValue() {
-            Val<Integer> v = new Val<>();
-            v.set(0);
-            addSet(v);
-            return v;
-        }
-    };
+    /**
+     * 函数式方法
+     */
+    static ThreadLocal<Val<Integer>> c = ThreadLocal.withInitial(() -> {
+                Val<Integer> v = new Val<>();
+                v.set(0);
+                addSet(v);
+                return v;
+    });
+
+    //static ThreadLocal<Val<Integer>> c = new ThreadLocal<Val<Integer>>() {
+    //    @Override
+    //    protected Val<Integer> initialValue() {
+    //        Val<Integer> v = new Val<>();
+    //        v.set(0);
+    //        addSet(v);
+    //        return v;
+    //    }
+    //};
 
     void __add() throws InterruptedException {
         Thread.sleep(100);
@@ -42,7 +52,7 @@ public class StartController {
         for (Val<Integer> integerVal : set) {
             System.out.println(integerVal.get());
         }
-        return set.stream().map(x -> x.get()).reduce((a,x) -> a+x).get();
+        return set.stream().map(x -> x.get()).reduce((a, x) -> a + x).get();
     }
 
     @RequestMapping("/add")
